@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!-- Declares the root element that allows behaviour to be modified through Angular custom HTML tags. -->
+<html ng-app="persons">
+<head>
+    <title>Gestion Datos Personales Clientes</title>
+
+    <link rel="stylesheet" href="lib/dependencies/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="lib/dependencies/css/ng-grid.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+    <script src="lib/dependencies/angular.min.js"></script>
+    <script src="lib/dependencies/angular-resource.min.js"></script>
+    <script src="lib/dependencies/jquery.min.js"></script>
+    <script src="lib/dependencies/ui-bootstrap-tpls.min.js"></script>
+    <script src="lib/dependencies/ng-grid.min.js"></script>
+
+    <script src="script/person.js"></script>
+
+</head>
+<body>
+<h1>Gestion Datos Personales Clientes</h1>
+<br/>
+
+<div class="message" ng-controller="alertMessagesController">
+    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+</div>
+<br>
+<div class="grid" ng-controller="personsListController">
+    <div>
+        <h3>Lista de Clientes</h3>
+    </div>
+    <div class="gridStyle" ng-grid="gridOptions"></div>
+
+    <pagination direction-links="true" boundary-links="true"
+                total-items="persons.totalResults" items-per-page="persons.pageSize"
+                ng-model="persons.currentPage" ng-change="refreshGrid()">
+    </pagination>
+</div>
+
+<div class="form" ng-controller="personsFormController">
+    <div ng-if="person.id == null">
+        <h3>Nuevo Cliente</h3>
+    </div>
+    <div ng-if="person.id != null">
+        <h3>Editar Cliente</h3>
+    </div>
+    <div>
+        <!-- DNI -->
+        <form name="personForm" ng-submit="updatePerson()" novalidate>
+
+            <div class="form-group" ng-class="{'has-error' : personForm.dni.$invalid && personForm.dni.$dirty}">
+                <label for="dni">DNI:</label>
+                <span ng-class="{'glyphicon glyphicon-ok' : personForm.dni.$valid && personForm.dni.$dirty}"></span>
+
+                <input id="dni" name="dni" type="text" class="form-control" maxlength="50"
+                       ng-model="person.dni"
+                       required ng-minlength="5" ng-maxlength="10"/>
+
+                <p class="help-block" ng-show="personForm.dni.$error.required">Agregar DNI</p>
+
+                <p class="help-block" ng-show="personForm.name.$error.minlength">El campo DNI debe contener al menos 5 caracateres</p>
+
+                <p class="help-block" ng-show="personForm.name.$error.maxlength">La cantidad de caracteres del DNI no puede ser mayor a 10</p>
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="form-group" ng-class="{'has-error' : personForm.name.$invalid && personForm.name.$dirty}">
+                <label for="name">NOMBRE:</label>
+                <span ng-class="{'glyphicon glyphicon-ok' : personForm.name.$valid && personForm.name.$dirty}"></span>
+                <input id="name" name="name" type="text" class="form-control" maxlength="50"
+                       ng-model="person.name"
+                       required ng-minlength="2" ng-maxlength="50"/>
+
+                <p class="help-block" ng-show="personForm.name.$error.required">Agregar Nombre</p>
+
+                <p class="help-block" ng-show="personForm.name.$error.minlength">La cantidad de caracteres del Nombre debe ser igual o mayor a 2</p>
+
+                <p class="help-block" ng-show="personForm.name.$error.maxlength">La cantidad de caracteres del Nombre debe ser menor que 50</p>
+            </div>
+
+            <!-- APELLIDO -->
+            <div class="form-group"
+                 ng-class="{'has-error' : personForm.lastName.$invalid && personForm.lastName.$dirty}">
+                <label for="lastName">Apellido:</label>
+                <span ng-class="{'glyphicon glyphicon-ok' : personForm.lastName.$valid && personForm.lastName.$dirty}"></span>
+                <input id="lastName" name="lastName" type="text" class="form-control" maxlength="50"
+                       ng-model="person.lastName"
+                       required ng-minlength="2" ng-maxlength="50"/>
+
+                <p class="help-block" ng-show="personForm.lastName.$error.required">Agregar Apellido</p>
+
+                <p class="help-block" ng-show="personForm.lastName.$error.minlength">La cantidad de caracteres del Apellido debe ser igual o mayor a 2</p>
+
+                <p class="help-block" ng-show="personForm.lastName.$error.maxlength">La cantidad de caracteres del Apellido debe ser menor que 50</p>
+            </div>
+
+            <!-- TELEFONO -->
+            <div class="form-group"
+                 ng-class="{'has-error' : personForm.phone.$invalid && personForm.phone.$dirty}">
+                <label for="phone">Telefono:</label>
+                <span ng-class="{'glyphicon glyphicon-ok' : personForm.phone.$valid && personForm.phone.$dirty}"></span>
+
+                <input id="phone" name="phone" type="url" class="form-control" maxlength="15"
+                       ng-model="person.phone"
+                       ng-minlength="8" ng-maxlength="15"/>
+
+                <p class="help-block" ng-show="personForm.phone.$error.minlength">El numero de telefono debe contener al menos 8 numeros</p>
+
+                <p class="help-block" ng-show="personForm.phone.$error.maxlength">El numero de telefono no puede contener mas de 15 numeros</p>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group"
+                 ng-class="{'has-error' : personForm.email.$invalid && personForm.email.$dirty}">
+                <label for="email">Email:</label>
+                <span ng-class="{'glyphicon glyphicon-ok' : personForm.email.$valid && personForm.email.$dirty}"></span>
+
+                <input id="email" name="email" type="url" class="form-control" maxlength="25"
+                       ng-model="person.email"
+                       required ng-minlength="8" ng-maxlength="25"/>
+
+                <p class="help-block" ng-show="personForm.email.$error.required">Agregar Email</p>
+
+                <p class="help-block" ng-show="personForm.email.$error.minlength">Email incorrecto : Debe contener al menos 8 caracteres</p>
+
+                <p class="help-block" ng-show="personForm.email.$error.maxlength">Email incorrecto : Contiene un elevado numero de caracteres</p>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="btn btn-primary" ng-click="clearForm()">Limpiar</button>
+                <button type="submit" class="btn btn-primary" ng-disabled="personForm.$invalid">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
